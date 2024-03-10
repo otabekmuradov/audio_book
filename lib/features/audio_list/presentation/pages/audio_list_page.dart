@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:audio_service/audio_service.dart';
 
-import '../../../../core/audio/audio_handler.dart';
+import '../../../saved/presentation/cubit/storage_cubit.dart';
+import '/core/audio/audio_handler.dart';
+import '/core/resources/app_colors.dart';
 import '/config/routes.dart';
 import '../widgets/audio_book_item.dart';
 import '/core/resources/statuses.dart';
@@ -20,7 +22,31 @@ class AudioListPage extends StatelessWidget implements AutoRouteWrapper {
     final audioHandler = ls<MyAudioHandler>();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Audiobook List'),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Audiobook List',
+              style: TextStyle(
+                color: AppColors.btBgColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                context.read<StorageCubit>().getBooks();
+                context.router.pushNamed(Routes.saved);
+              },
+              child: const Text(
+                'Saved',
+                style: TextStyle(
+                  color: AppColors.btBgColor,
+                  fontSize: 20,
+                ),
+              ),
+            )
+          ],
+        ),
       ),
       body: BlocBuilder<AudioBookInfoBloc, AudioBookInfoState>(
         builder: (context, state) {
@@ -33,12 +59,11 @@ class AudioListPage extends StatelessWidget implements AutoRouteWrapper {
               itemBuilder: (context, index) {
                 final mediaItems = state.audioBookInfo
                     .map((book) => MediaItem(
-                          id: book.id.toString(),
-                          album: book.text,
-                          title: book.title,
-                          extras: {'url': book.audio},
-                          artUri: Uri.parse(book.image)
-                        ))
+                        id: book.id.toString(),
+                        album: book.text,
+                        title: book.title,
+                        extras: {'url': book.audio},
+                        artUri: Uri.parse(book.image)))
                     .toList();
                 return AudioBookItem(
                   book: state.audioBookInfo[index],

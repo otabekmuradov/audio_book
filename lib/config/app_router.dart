@@ -21,5 +21,9 @@ class AppRouter extends $AppRouter {
           page: PlayerRoute.page,
           path: Routes.player,
         ),
+        AutoRoute(
+          page: SavedRoute.page,
+          path: Routes.saved,
+        ),
       ];
 }

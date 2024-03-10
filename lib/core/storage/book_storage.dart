@@ -1,38 +1,66 @@
-// import 'package:audio_book/core/resources/app_keys.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
+import 'dart:convert';
 
-// import '../../features/audio_list/domain/entities/audiobook_info.dart';
+import 'package:audio_book/core/resources/app_keys.dart';
 
-// class BookStorage {
-//   final SharedPreferences storage;
-//   BookStorage({required this.storage});
+import 'package:shared_preferences/shared_preferences.dart';
 
-//   Future<List<AudioBookInfo>> getBooks() async {
-//     final existingList = storage.getStringList(AppKeys.storageKey) ?? <String>[];
+import '../../features/audio_list/data/models/audiobook_info_dto.dart';
 
-//     return Future.value(
-//       existingList.map((e) => BookModel.fromJson(jsonDecode(e))).toList(),
-//     );
-//   }
+class BookStorage {
+  final SharedPreferences storage;
 
-//   Future<List<AudioBookInfo>> save(BookModel book) async {
-//     final existingList = storage.getStringList(_Keys.storageKey) ?? <String>[];
+  BookStorage({required this.storage});
 
-//     final existingProdIndex = existingList.indexWhere((item) {
-//       final BookModel decodedBook = BookModel.fromJson(
-//         jsonDecode(item),
-//       );
-//       return decodedBook.id == book.id;
-//     });
-//     if (existingProdIndex == -1) {
-//       final String jsonBook = jsonEncode(book.toJson());
-//       existingList.add(jsonBook);
-//     }
+  Future<List<AudioBookInfoDto>> saveBooks(AudioBookInfoDto book) async {
+    print("save books ssssssssss  ${book.title}");
 
-//     storage.setStringList(_Keys.storageKey, existingList);
+    final existingList =
+        storage.getStringList(AppKeys.storageKey) ?? <String>[];
 
-//     return Future.value(
-//       existingList.map((e) => BookModel.fromJson(jsonDecode(e))).toList(),
-//     );
-//   }
-// }
+
+    final existingProdIndex = existingList.indexWhere((item) {
+      final AudioBookInfoDto decodedBook = AudioBookInfoDto.fromJson(
+        jsonDecode(item),
+      );
+      return decodedBook.id == book.id;
+    });
+    if (existingProdIndex == -1) {
+      final String jsonBook = jsonEncode(book.toJson());
+      existingList.add(jsonBook);
+    }
+
+    storage.setStringList(AppKeys.storageKey, existingList);
+
+    return Future.value(
+      existingList.map((book) => AudioBookInfoDto.fromJson(json.decode(book))).toList()
+    );
+  }
+
+  Future<List<AudioBookInfoDto>> getBooks() async {
+    final List<String>? data = storage.getStringList(AppKeys.storageKey);
+    print("sadddddddddddd   ${data?.first}");
+    if (data == null) {
+      return [];
+    }
+    return data
+        .map((book) => AudioBookInfoDto.fromJson(json.decode(book)))
+        .toList();
+  }
+
+  // Future<void> deleteBook(int id) async {
+  //   final List<AudioBookInfoDto> books = await getBooks();
+  //   final List<AudioBookInfoDto> newBooks = books.where((book) => book.id != id).toList();
+  //   await saveBooks(newBooks);
+  // }
+
+  // Future<void> deleteAllBooks() async {
+  //   await sharedPreferences.remove(AppKeys.storageKey);
+  // }
+
+  // Future<void> updateBook(AudioBookInfoDto book) async {
+  //   final List<AudioBookInfoDto> books = await getBooks();
+  //   final List<AudioBookInfoDto> newBooks = books.map((b) => b.id == book.id ? book : b).toList();
+  //   await saveBooks(newBooks);
+  // }
+}
